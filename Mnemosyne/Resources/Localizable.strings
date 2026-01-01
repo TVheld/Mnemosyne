@@ -1,0 +1,121 @@
+/*
+  Localizable.strings
+  Mnemosyne
+
+  Nederlandse vertalingen voor de Mnemosyne app.
+*/
+
+// MARK: - Algemeen
+"app.name" = "Mnemosyne";
+"app.tagline" = "Stemming & Cyclus Inzicht";
+
+// MARK: - Tab Bar
+"tab.today" = "Vandaag";
+"tab.history" = "Geschiedenis";
+"tab.insights" = "Inzichten";
+"tab.cycle" = "Cyclus";
+"tab.settings" = "Instellingen";
+
+// MARK: - Mood Entry
+"mood.title" = "Kies hoe je je op dit moment voelt";
+"mood.very_unpleasant" = "Zeer onaangenaam";
+"mood.unpleasant" = "Onaangenaam";
+"mood.neutral" = "Neutraal";
+"mood.pleasant" = "Aangenaam";
+"mood.very_pleasant" = "Zeer aangenaam";
+"mood.slider.left" = "ZEER ONAANGENAAM";
+"mood.slider.right" = "ZEER AANGENAAM";
+
+// MARK: - Tags
+"tags.title" = "Context";
+"tags.instruction" = "Voeg context toe aan je stemming";
+"tags.section.physical" = "Hoe voel je je fysiek/mentaal?";
+"tags.section.positive" = "Positieve momenten";
+"tags.continue" = "Doorgaan";
+"tags.skip" = "Overslaan";
+
+// Negatieve tags
+"tag.headache" = "Hoofdpijn";
+"tag.stomach_pain" = "Buikpijn";
+"tag.poor_sleep" = "Slecht geslapen";
+"tag.stress" = "Stress/spanning";
+"tag.emotional" = "Emotioneel/huilbui";
+"tag.tired" = "Moe/uitgeput";
+"tag.conflict" = "Ruzie/conflict";
+"tag.body_image" = "Lichaamsbeeld negatief";
+"tag.nausea" = "Misselijkheid";
+"tag.bloating" = "Opgeblazen gevoel";
+
+// Positieve tags
+"tag.energetic" = "Energiek";
+"tag.social" = "Sociaal contact gehad";
+"tag.productive" = "Productieve dag";
+"tag.good_sleep" = "Goed geslapen";
+"tag.exercise" = "Gesport/bewogen";
+"tag.hydrated" = "Genoeg water gedronken";
+"tag.intimate" = "Intieme momenten";
+
+// MARK: - Confirmation
+"confirmation.title" = "Vastgelegd";
+"confirmation.new_entry" = "Nieuwe entry";
+
+// MARK: - History
+"history.title" = "Geschiedenis";
+"history.today" = "Vandaag";
+"history.yesterday" = "Gisteren";
+"history.empty.title" = "Nog geen entries";
+"history.empty.subtitle" = "Begin met het vastleggen van je stemming";
+
+// MARK: - Entry Detail
+"detail.date" = "Datum";
+"detail.time" = "Tijd";
+"detail.score" = "Score";
+"detail.context" = "Context";
+"detail.note" = "Notitie";
+"detail.done" = "Gereed";
+
+// MARK: - Settings
+"settings.title" = "Instellingen";
+"settings.notifications" = "Herinneringen";
+"settings.notifications.enabled" = "Aan";
+"settings.notifications.enable" = "Inschakelen";
+"settings.notifications.footer" = "Je ontvangt 3 keer per dag een herinnering om je stemming vast te leggen.";
+"settings.reminder" = "Herinnering";
+"settings.interval" = "Herinnering interval";
+"settings.interval.value" = "15 minuten";
+"settings.sync" = "Synchronisatie";
+"settings.cloudkit" = "CloudKit";
+"settings.healthkit" = "HealthKit";
+"settings.coming_soon" = "Binnenkort";
+"settings.about" = "Over Mnemosyne";
+"settings.version" = "Versie";
+"settings.developer" = "Ontwikkelaar";
+
+// MARK: - Debug
+"debug.title" = "Debug";
+"debug.seed_data" = "Seed test data (90 dagen)";
+"debug.clear_data" = "Wis alle data";
+
+// MARK: - Notifications
+"notification.title" = "Hoe voel je je nu?";
+"notification.body" = "Neem even de tijd om je stemming vast te leggen.";
+
+// MARK: - Placeholders
+"placeholder.coming_soon" = "Binnenkort beschikbaar";
+
+// MARK: - Stats
+"stats.today" = "vandaag";
+"stats.streak" = "dagen streak";
+
+// MARK: - Menstrual Flow
+"flow.none" = "Geen";
+"flow.spotting" = "Spotting";
+"flow.light" = "Licht";
+"flow.medium" = "Normaal";
+"flow.heavy" = "Hevig";
+"flow.title" = "Menstruatie flow";
+
+// MARK: - Time Picker
+"timepicker.title" = "Herinnering tijd";
+"timepicker.done" = "Gereed";
+"timepicker.choose" = "Kies een tijd";

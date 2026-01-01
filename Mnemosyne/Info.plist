@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Mnemosyne leest je gezondheidsdata om correlaties te vinden tussen je stemming en fysieke gezondheid, zoals slaap, hoofdpijn en menstruatie.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Mnemosyne slaat je stemming-gerelateerde gezondheidsdata op in Apple Health, zoals hoofdpijn, vermoeidheid, slaapkwaliteit en menstruatie flow.</string>
+</dict>
+</plist>
