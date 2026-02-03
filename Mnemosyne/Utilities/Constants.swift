@@ -68,4 +68,10 @@ enum Constants {
         case medium = "Normaal"
         case heavy = "Hevig"
     }
+
+    // MARK: - Cycle
+    enum Cycle {
+        /// Number of days before stop week that PMS period starts
+        static let pmsDaysBeforeStopWeek: Int = 7
+    }
 }

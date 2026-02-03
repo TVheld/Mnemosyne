@@ -152,7 +152,7 @@ struct CalendarDayView: View {
                 .foregroundColor(foregroundColor)
 
             // Flow indicator dot
-            if let flow = flow, flow != "Geen" {
+            if let flow = flow, flow != Constants.MenstrualFlow.none.rawValue {
                 Circle()
                     .fill(flowColor(for: flow))
                     .frame(width: 6, height: 6)
@@ -182,13 +182,14 @@ struct CalendarDayView: View {
         }
     }
 
-    private func flowColor(for flow: String) -> Color {
+    private func flowColor(for flowString: String) -> Color {
+        guard let flow = Constants.MenstrualFlow(rawValue: flowString) else { return .clear }
         switch flow {
-        case "Spotting": return .pink.opacity(0.5)
-        case "Licht": return .pink.opacity(0.7)
-        case "Normaal": return .pink
-        case "Hevig": return .red
-        default: return .clear
+        case .none: return .clear
+        case .spotting: return .pink.opacity(0.5)
+        case .light: return .pink.opacity(0.7)
+        case .medium: return .pink
+        case .heavy: return .red
         }
     }
 }

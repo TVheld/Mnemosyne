@@ -244,8 +244,8 @@ struct PMSPatternView: View {
     let stopWeekStart: Int
 
     private var prePMSDays: [CorrelationEngine.CycleDayMoodData] {
-        // Dagen 3-5 voor stopweek (typische PMS periode)
-        let pmsStartDay = max(1, stopWeekStart - 5)
+        // PMS periode voor stopweek
+        let pmsStartDay = max(1, stopWeekStart - Constants.Cycle.pmsDaysBeforeStopWeek)
         let pmsEndDay = stopWeekStart - 1
         return data.filter { $0.cycleDay >= pmsStartDay && $0.cycleDay <= pmsEndDay && $0.entryCount > 0 }
     }

@@ -5,7 +5,6 @@ struct PillForgottenView: View {
     @StateObject private var cycleManager = CycleManager.shared
 
     @State private var daysToShift: Int = 1
-    @State private var shiftAllFuture: Bool = true
 
     var body: some View {
         NavigationStack {
@@ -19,13 +18,11 @@ struct PillForgottenView: View {
                 }
 
                 Section {
-                    Toggle("Verschuif hele toekomstige cyclus", isOn: $shiftAllFuture)
-                } footer: {
-                    if shiftAllFuture {
-                        Text("Je hele cyclus wordt met \(daysToShift) dag(en) verschoven. Alle toekomstige voorspellingen worden aangepast.")
-                    } else {
-                        Text("Alleen deze cyclus wordt aangepast. Volgende cycli blijven op het originele schema.")
-                    }
+                    Text("Je hele cyclus wordt met \(daysToShift) dag(en) verschoven. Alle toekomstige voorspellingen worden aangepast.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                } header: {
+                    Text("Wat gebeurt er?")
                 }
 
                 Section {
@@ -97,7 +94,7 @@ struct PillForgottenView: View {
     }
 
     private func applyShift() {
-        cycleManager.shiftCycle(by: daysToShift, shiftAllFuture: shiftAllFuture)
+        cycleManager.shiftCycle(by: daysToShift)
         isPresented = false
     }
 }

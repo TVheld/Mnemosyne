@@ -7,11 +7,11 @@ struct FlowSelectionView: View {
     let onBack: () -> Void
 
     private let flowOptions = [
-        FlowOption(value: "Geen", icon: "circle", color: .gray),
-        FlowOption(value: "Spotting", icon: "drop", color: .pink.opacity(0.5)),
-        FlowOption(value: "Licht", icon: "drop.fill", color: .pink.opacity(0.7)),
-        FlowOption(value: "Normaal", icon: "drop.fill", color: .pink),
-        FlowOption(value: "Hevig", icon: "drop.fill", color: .red)
+        FlowOption(value: Constants.MenstrualFlow.none.rawValue, icon: "circle", color: .gray),
+        FlowOption(value: Constants.MenstrualFlow.spotting.rawValue, icon: "drop", color: .pink.opacity(0.5)),
+        FlowOption(value: Constants.MenstrualFlow.light.rawValue, icon: "drop.fill", color: .pink.opacity(0.7)),
+        FlowOption(value: Constants.MenstrualFlow.medium.rawValue, icon: "drop.fill", color: .pink),
+        FlowOption(value: Constants.MenstrualFlow.heavy.rawValue, icon: "drop.fill", color: .red)
     ]
 
     var body: some View {

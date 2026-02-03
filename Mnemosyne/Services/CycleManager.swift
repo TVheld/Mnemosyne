@@ -96,15 +96,16 @@ class CycleManager: ObservableObject {
         let cycleLength = Int(config.cycleLength)
 
         // Calculate current day in cycle (1-indexed)
-        currentCycleDay = (daysSinceStart % cycleLength) + 1
+        // Use proper modulo that handles negative numbers (when start date is in future)
+        currentCycleDay = ((daysSinceStart % cycleLength) + cycleLength) % cycleLength + 1
 
         // Check if in stop week
         let stopStart = Int(config.stopWeekStart)
         let stopEnd = Int(config.stopWeekEnd)
         isInStopWeek = currentCycleDay >= stopStart && currentCycleDay <= stopEnd
 
-        // Check if in PMS period (7 days before stop week)
-        let pmsStart = stopStart - 7
+        // Check if in PMS period
+        let pmsStart = stopStart - Constants.Cycle.pmsDaysBeforeStopWeek
         isPMSPeriod = currentCycleDay >= pmsStart && currentCycleDay < stopStart
 
         // Days until period
@@ -180,7 +181,8 @@ class CycleManager: ObservableObject {
 
         let daysSinceStart = calendar.dateComponents([.day], from: cycleStart, to: targetDate).day ?? 0
         let cycleLength = Int(config.cycleLength)
-        let dayInCycle = (daysSinceStart % cycleLength) + 1
+        // Use proper modulo that handles negative numbers
+        let dayInCycle = ((daysSinceStart % cycleLength) + cycleLength) % cycleLength + 1
 
         let stopStart = Int(config.stopWeekStart)
         let stopEnd = Int(config.stopWeekEnd)
@@ -200,30 +202,25 @@ class CycleManager: ObservableObject {
 
         let daysSinceStart = calendar.dateComponents([.day], from: cycleStart, to: targetDate).day ?? 0
         let cycleLength = Int(config.cycleLength)
-        let dayInCycle = (daysSinceStart % cycleLength) + 1
+        // Use proper modulo that handles negative numbers
+        let dayInCycle = ((daysSinceStart % cycleLength) + cycleLength) % cycleLength + 1
 
         let stopStart = Int(config.stopWeekStart)
-        let pmsStart = stopStart - 7
+        let pmsStart = stopStart - Constants.Cycle.pmsDaysBeforeStopWeek
 
         return dayInCycle >= pmsStart && dayInCycle < stopStart
     }
 
     // MARK: - Pill Forgotten
 
-    func shiftCycle(by days: Int, shiftAllFuture: Bool) {
+    func shiftCycle(by days: Int) {
         guard let config = configuration,
               let currentStart = config.currentCycleStartDate else {
             return
         }
 
         let calendar = Calendar.current
-
-        if shiftAllFuture {
-            // Shift the cycle start date
-            config.currentCycleStartDate = calendar.date(byAdding: .day, value: days, to: currentStart)
-        }
-        // For single cycle adjustment, we'd need more complex logic
-
+        config.currentCycleStartDate = calendar.date(byAdding: .day, value: days, to: currentStart)
         config.lastModified = Date()
 
         do {
@@ -282,13 +279,14 @@ class CycleManager: ObservableObject {
             guard !entries.isEmpty else { return nil }
 
             let intensityValues: [Double] = entries.compactMap { entry in
-                guard let flow = entry.menstrualFlow else { return nil }
+                guard let flowString = entry.menstrualFlow,
+                      let flow = Constants.MenstrualFlow(rawValue: flowString) else { return nil }
                 switch flow {
-                case "Spotting": return 1
-                case "Licht": return 2
-                case "Normaal": return 3
-                case "Hevig": return 4
-                default: return nil
+                case .none: return nil
+                case .spotting: return 1
+                case .light: return 2
+                case .medium: return 3
+                case .heavy: return 4
                 }
             }
 

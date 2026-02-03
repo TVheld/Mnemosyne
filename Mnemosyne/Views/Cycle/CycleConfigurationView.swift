@@ -7,7 +7,17 @@ struct CycleConfigurationView: View {
     @State private var pillBrand: String = ""
     @State private var cycleLength: Int = 28
     @State private var stopWeekStart: Int = 22
+    @State private var stopWeekEnd: Int = 28
     @State private var cycleStartDate: Date = Date()
+
+    // Validation
+    private var isValidConfiguration: Bool {
+        stopWeekStart >= 1 &&
+        stopWeekStart < stopWeekEnd &&
+        stopWeekEnd <= cycleLength &&
+        cycleLength >= 21 &&
+        cycleLength <= 35
+    }
 
     var body: some View {
         NavigationStack {
@@ -25,18 +35,20 @@ struct CycleConfigurationView: View {
 
                 // Timing section
                 Section {
-                    Stepper("Stopweek begint op dag: \(stopWeekStart)", value: $stopWeekStart, in: 15...28)
+                    Stepper("Begint op dag: \(stopWeekStart)", value: $stopWeekStart, in: 15...(stopWeekEnd - 1))
+
+                    Stepper("Eindigt op dag: \(stopWeekEnd)", value: $stopWeekEnd, in: (stopWeekStart + 1)...cycleLength)
 
                     HStack {
                         Text("Stopweek")
                         Spacer()
-                        Text("Dag \(stopWeekStart) - \(cycleLength)")
+                        Text("Dag \(stopWeekStart) - \(stopWeekEnd) (\(stopWeekEnd - stopWeekStart + 1) dagen)")
                             .foregroundStyle(.secondary)
                     }
                 } header: {
                     Text("Stopweek")
                 } footer: {
-                    Text("Dit zijn de dagen waarop je geen pil slikt en meestal ongesteld wordt.")
+                    Text("Dit zijn de dagen waarop je geen pil slikt en meestal ongesteld wordt. Standaard is dit 7 dagen.")
                 }
 
                 // Start date section
@@ -80,10 +92,21 @@ struct CycleConfigurationView: View {
                         saveConfiguration()
                     }
                     .fontWeight(.semibold)
+                    .disabled(!isValidConfiguration)
                 }
             }
             .onAppear {
                 loadExistingConfiguration()
+            }
+            .onChange(of: cycleLength) { oldValue, newValue in
+                // Auto-adjust stopWeekEnd if it exceeds new cycleLength
+                if stopWeekEnd > newValue {
+                    stopWeekEnd = newValue
+                }
+                // Auto-adjust stopWeekStart if needed
+                if stopWeekStart >= stopWeekEnd {
+                    stopWeekStart = max(1, stopWeekEnd - 1)
+                }
             }
         }
     }
@@ -93,6 +116,7 @@ struct CycleConfigurationView: View {
             pillBrand = config.pillBrand ?? ""
             cycleLength = Int(config.cycleLength)
             stopWeekStart = Int(config.stopWeekStart)
+            stopWeekEnd = Int(config.stopWeekEnd)
             if let startDate = config.currentCycleStartDate {
                 cycleStartDate = startDate
             }
@@ -104,7 +128,7 @@ struct CycleConfigurationView: View {
             pillBrand: pillBrand,
             cycleLength: cycleLength,
             stopWeekStart: stopWeekStart,
-            stopWeekEnd: cycleLength,
+            stopWeekEnd: stopWeekEnd,
             cycleStartDate: cycleStartDate
         )
         isPresented = false

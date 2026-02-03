@@ -25,7 +25,7 @@ class MoodEntryViewModel: ObservableObject {
     enum EntryStep {
         case mood
         case tags
-        case flow      // Only shown during stop week
+        case flow      // Shown when cycle is configured
         case confirmation
     }
 
@@ -61,7 +61,9 @@ class MoodEntryViewModel: ObservableObject {
     }
 
     var shouldShowFlowTracking: Bool {
-        cycleManager.isConfigured && cycleManager.isInStopWeek
+        // Always show flow tracking when cycle is configured
+        // User can log flow anytime (period may start early, spotting, etc.)
+        cycleManager.isConfigured
     }
 
     // MARK: - Init
