@@ -7,16 +7,19 @@ struct SettingsView: View {
     @StateObject private var healthKitManager = HealthKitManager.shared
     @State private var showingTimePicker: Int? = nil
     @State private var debugModeEnabled = false
-    @State private var shakeCount = 0
     @State private var showingSyncQueue = false
+    @State private var versionTapCount = 0
 
     var body: some View {
         NavigationStack {
             List {
+                // Privacy sectie (AVG)
+                privacySection
+
                 // Notificaties sectie
                 notificationSection
 
-                // Sync status sectie (placeholder voor Phase 2)
+                // Sync status sectie
                 syncSection
 
                 // Debug sectie (verborgen tenzij debug mode)
@@ -28,9 +31,50 @@ struct SettingsView: View {
                 aboutSection
             }
             .navigationTitle("Instellingen")
-            .onShake {
-                handleShake()
+        }
+    }
+
+    private func handleVersionTap() {
+        versionTapCount += 1
+
+        if versionTapCount >= 5 {
+            debugModeEnabled = true
+            versionTapCount = 0
+
+            // Haptic feedback
+            let generator = UINotificationFeedbackGenerator()
+            generator.notificationOccurred(.success)
+        }
+
+        // Reset na 2 seconden
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            if versionTapCount < 5 {
+                versionTapCount = 0
             }
+        }
+    }
+
+    // MARK: - Privacy Section
+
+    @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled = false
+
+    private var privacySection: some View {
+        Section {
+            NavigationLink {
+                PrivacySettingsView()
+            } label: {
+                HStack {
+                    Label("Privacy & Data", systemImage: "hand.raised.fill")
+                    Spacer()
+                    Text(iCloudSyncEnabled ? "iCloud" : "Lokaal")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        } header: {
+            Text("Privacy")
+        } footer: {
+            Text("Beheer je data, exporteer of verwijder alles.")
         }
     }
 
@@ -284,7 +328,7 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
             }
         } footer: {
-            Text("Debug mode actief. Schud 5x om te activeren/deactiveren.")
+            Text("Debug mode actief. Tik 5x op versienummer om te activeren.")
         }
     }
 
@@ -292,11 +336,16 @@ struct SettingsView: View {
 
     private var aboutSection: some View {
         Section {
+            // Tik 5x op versie om debug mode te activeren
             HStack {
                 Text("Versie")
                 Spacer()
                 Text("\(Bundle.main.appVersion) (\(Bundle.main.buildNumber))")
                     .foregroundStyle(.secondary)
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                handleVersionTap()
             }
 
             HStack {
@@ -316,27 +365,6 @@ struct SettingsView: View {
             Text("Over Mnemosyne")
         } footer: {
             Text("Mnemosyne - Godin van herinnering. Track je stemming, ontdek patronen.")
-        }
-    }
-
-    // MARK: - Debug Mode
-
-    private func handleShake() {
-        shakeCount += 1
-        if shakeCount >= 5 {
-            debugModeEnabled = true
-            shakeCount = 0
-
-            // Haptic feedback
-            let generator = UINotificationFeedbackGenerator()
-            generator.notificationOccurred(.success)
-        }
-
-        // Reset count na 2 seconden
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            if shakeCount < 5 {
-                shakeCount = 0
-            }
         }
     }
 

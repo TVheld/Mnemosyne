@@ -2,11 +2,14 @@ import SwiftUI
 
 struct OnboardingView: View {
     @Binding var isOnboardingComplete: Bool
+    var onLocalOnlySelected: (() -> Void)? = nil
     @StateObject private var notificationManager = NotificationManager.shared
     @StateObject private var healthKitManager = HealthKitManager.shared
+    @AppStorage("hasGivenHealthDataConsent") private var hasGivenHealthDataConsent = false
+    @AppStorage("iCloudSyncEnabled") private var iCloudSyncEnabled = false
     @State private var currentPage = 0
 
-    private let totalPages = 4
+    private let totalPages = 5
 
     var body: some View {
         ZStack {
@@ -42,14 +45,20 @@ struct OnboardingView: View {
                     FeaturesPage()
                         .tag(1)
 
+                    PrivacyConsentPage(
+                        hasConsented: $hasGivenHealthDataConsent,
+                        iCloudSyncEnabled: $iCloudSyncEnabled
+                    )
+                    .tag(2)
+
                     NotificationPermissionPage(notificationManager: notificationManager)
-                        .tag(2)
+                        .tag(3)
 
                     HealthKitPermissionPage(
                         healthKitManager: healthKitManager,
                         onComplete: completeOnboarding
                     )
-                    .tag(3)
+                    .tag(4)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .animation(.easeInOut, value: currentPage)
@@ -69,13 +78,20 @@ struct OnboardingView: View {
                     Spacer()
 
                     if currentPage < totalPages - 1 {
-                        Button(action: nextPage) {
-                            HStack {
-                                Text("Volgende")
-                                Image(systemName: "chevron.right")
+                        // Can only proceed past privacy page if consent is given
+                        if currentPage == 2 && !hasGivenHealthDataConsent {
+                            Text("Geef toestemming om door te gaan")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        } else {
+                            Button(action: nextPage) {
+                                HStack {
+                                    Text("Volgende")
+                                    Image(systemName: "chevron.right")
+                                }
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.pink)
                             }
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.pink)
                         }
                     }
                 }
@@ -98,7 +114,18 @@ struct OnboardingView: View {
     }
 
     private func completeOnboarding() {
+        // Save to UserDefaults
         UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
+        UserDefaults.standard.set(Date(), forKey: "consentDate")
+
+        // If user chose local-only, we need to restart the app
+        // because PersistenceController was initialized with CloudKit enabled
+        // (to support data recovery after reinstall)
+        if !iCloudSyncEnabled {
+            onLocalOnlySelected?()
+            return
+        }
+
         withAnimation {
             isOnboardingComplete = true
         }
@@ -220,6 +247,138 @@ struct FeatureRow: View {
                 Text(title)
                     .font(.headline)
 
+                Text(description)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+}
+
+// MARK: - Privacy Consent Page
+
+struct PrivacyConsentPage: View {
+    @Binding var hasConsented: Bool
+    @Binding var iCloudSyncEnabled: Bool
+    @State private var showPrivacyPolicy = false
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 24) {
+                Spacer(minLength: 20)
+
+                Image(systemName: "hand.raised.fill")
+                    .font(.system(size: 60))
+                    .foregroundStyle(.blue)
+                    .padding()
+                    .background(
+                        Circle()
+                            .fill(Color.blue.opacity(0.1))
+                            .frame(width: 120, height: 120)
+                    )
+
+                VStack(spacing: 12) {
+                    Text("Jouw Privacy")
+                        .font(.title)
+                        .fontWeight(.bold)
+
+                    Text("Deze app verwerkt gevoelige gezondheidsgegevens. Je hebt volledige controle over je data.")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 20)
+                }
+
+                // Data we collect
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Welke data verzamelen we?")
+                        .font(.headline)
+
+                    DataTypeRow(icon: "face.smiling", title: "Stemmingsscores", description: "Je dagelijkse stemmingswaarden")
+                    DataTypeRow(icon: "tag", title: "Context tags", description: "Tags zoals 'hoofdpijn' of 'goed geslapen'")
+                    DataTypeRow(icon: "drop.fill", title: "Cyclusdata", description: "Menstruatiecyclus informatie")
+                }
+                .padding()
+                .background(Color(.systemGray6))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .padding(.horizontal, 20)
+
+                // Storage choice
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Waar wordt je data opgeslagen?")
+                        .font(.headline)
+
+                    Toggle(isOn: $iCloudSyncEnabled) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Image(systemName: "icloud")
+                                Text("iCloud synchronisatie")
+                                    .fontWeight(.medium)
+                            }
+                            Text(iCloudSyncEnabled
+                                 ? "Data wordt gesynchroniseerd via iCloud naar je andere apparaten"
+                                 : "Data blijft alleen op dit apparaat (aanbevolen voor maximale privacy)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .tint(.pink)
+                }
+                .padding()
+                .background(Color(.systemGray6))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .padding(.horizontal, 20)
+
+                // Consent toggle
+                VStack(spacing: 16) {
+                    Toggle(isOn: $hasConsented) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Ik geef toestemming")
+                                .fontWeight(.semibold)
+                            Text("Ik begrijp dat mijn gezondheidsdata wordt opgeslagen en ga akkoord met het privacybeleid.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .tint(.green)
+
+                    Button(action: { showPrivacyPolicy = true }) {
+                        HStack {
+                            Image(systemName: "doc.text")
+                            Text("Bekijk privacybeleid")
+                        }
+                        .font(.subheadline)
+                    }
+                }
+                .padding()
+                .background(hasConsented ? Color.green.opacity(0.1) : Color(.systemGray6))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .padding(.horizontal, 20)
+
+                Spacer(minLength: 60)
+            }
+        }
+        .sheet(isPresented: $showPrivacyPolicy) {
+            PrivacyPolicyView()
+        }
+    }
+}
+
+struct DataTypeRow: View {
+    let icon: String
+    let title: String
+    let description: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .foregroundStyle(.pink)
+                .frame(width: 24)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
                 Text(description)
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -387,6 +546,119 @@ struct HealthKitPermissionPage: View {
     private func requestHealthKit() {
         Task {
             await healthKitManager.requestAuthorization()
+        }
+    }
+}
+
+// MARK: - Privacy Policy View
+
+struct PrivacyPolicyView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    Group {
+                        Text("Privacybeleid Mnemosyne")
+                            .font(.title)
+                            .fontWeight(.bold)
+
+                        Text("Laatst bijgewerkt: \(Date().formatted(date: .long, time: .omitted))")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    policySection(
+                        title: "1. Welke gegevens verzamelen we?",
+                        content: """
+                        Mnemosyne verzamelt de volgende gegevens:
+                        • Stemmingsscores (-5 tot +5)
+                        • Context tags (bijv. 'hoofdpijn', 'goed geslapen')
+                        • Menstruatiecyclus data
+                        • Tijdstempels van registraties
+
+                        Dit zijn bijzondere persoonsgegevens (gezondheidsdata) onder de AVG.
+                        """
+                    )
+
+                    policySection(
+                        title: "2. Waarom verzamelen we deze gegevens?",
+                        content: """
+                        We verzamelen deze gegevens uitsluitend om:
+                        • Je stemming en patronen te visualiseren
+                        • Correlaties te ontdekken tussen stemming en andere factoren
+                        • Je te helpen inzicht te krijgen in je welzijn
+
+                        We gebruiken je data niet voor advertenties, marketing of andere doeleinden.
+                        """
+                    )
+
+                    policySection(
+                        title: "3. Waar wordt je data opgeslagen?",
+                        content: """
+                        Je kunt kiezen:
+
+                        • Alleen lokaal: Data blijft alleen op dit apparaat. Niemand anders heeft toegang.
+
+                        • iCloud sync: Data wordt via Apple iCloud gesynchroniseerd naar je andere apparaten. Apple kan technisch gezien toegang hebben tot deze data.
+
+                        • HealthKit: Als je dit inschakelt, wordt data ook naar Apple Health geschreven.
+                        """
+                    )
+
+                    policySection(
+                        title: "4. Jouw rechten (AVG)",
+                        content: """
+                        Je hebt het recht om:
+                        • Je data in te zien (via de app)
+                        • Je data te exporteren (Instellingen → Privacy)
+                        • Je data te verwijderen (Instellingen → Privacy)
+                        • Je toestemming in te trekken
+
+                        Al deze opties zijn beschikbaar in de app.
+                        """
+                    )
+
+                    policySection(
+                        title: "5. Beveiliging",
+                        content: """
+                        • Lokale data wordt beschermd door iOS apparaat-encryptie
+                        • We delen je data niet met derden
+                        • Er is geen analytics of tracking in de app
+                        • De app heeft geen server - alle data is van jou
+                        """
+                    )
+
+                    policySection(
+                        title: "6. Contact",
+                        content: """
+                        Voor vragen over je privacy kun je contact opnemen via de App Store pagina.
+                        """
+                    )
+                }
+                .padding()
+            }
+            .navigationTitle("Privacybeleid")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Sluiten") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+
+    private func policySection(title: String, content: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.headline)
+
+            Text(content)
+                .font(.body)
+                .foregroundStyle(.secondary)
         }
     }
 }
